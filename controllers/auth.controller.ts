@@ -1,15 +1,22 @@
 import { Request, Response } from 'express'
-import jsonwebtoken from 'jsonwebtoken'
+import User from '../models/User'
+import bcrypt from 'bcrypt'
+import { generateToken } from '../helpers/generateToken'
 
-function login(req: Request, res: Response) {
+async function login(req: Request, res: Response) {
     const { email, password } = req.body
 
-    const token = jsonwebtoken.sign({ email, password }, 'secret')
+    const user = await User.findByEmail(email)
 
-    res.json({
-        statusMessage: 'success',
-        msg: 'Login successful',
-    })
+    const isValidPassword = await bcrypt.compare(password, user.password)
+
+    if (!isValidPassword) {
+        return res.status(400).json({ message: 'Invalid email or password' })
+    }
+
+    const token = await generateToken({ email, password })
+
+    res.json({ user, token })
 }
 
 export { login }

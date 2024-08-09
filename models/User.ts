@@ -1,13 +1,12 @@
 import { IUser } from '../interfaces/IUser'
 import { pool } from '../databases/postgresDB'
-import { securePassword } from '../helpers/securePassword'
 
 class User implements IUser {
     id?: number
     name: string
     email: string
     password: string
-    role_id: number
+    role_id?: number
     created_at?: string
     updated_at?: string
     deleted_at?: string
@@ -62,13 +61,27 @@ class User implements IUser {
         }
     }
 
+    static async findByEmail(email: string) {
+        try {
+            const result = await pool
+                .query('SELECT email, password FROM users WHERE email = $1', [
+                    email,
+                ])
+                .then((res) => res.rows[0])
+
+            return result
+        } catch (error) {
+            return error
+        }
+    }
+
     static async create(user: IUser) {
         const { name, email, password, role_id } = user
 
         try {
             await pool.query(
                 'INSERT INTO users (name, email, password, role_id) VALUES ($1, $2, $3, $4)',
-                [name, email, await securePassword(password), role_id]
+                [name, email, password, role_id]
             )
 
             return user

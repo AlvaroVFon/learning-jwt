@@ -9,7 +9,7 @@ const createUsersTable = async () => {
                 name VARCHAR(100) NOT NULL,
                 email VARCHAR(100) NOT NULL UNIQUE,
                 password VARCHAR(100) NOT NULL,
-                role_id int REFERENCES roles(id),
+                role_id int REFERENCES roles(id) DEFAULT 4,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 deleted_at TIMESTAMP DEFAULT NULL

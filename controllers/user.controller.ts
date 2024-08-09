@@ -1,4 +1,5 @@
 import { Response, Request } from 'express'
+import { securePassword } from '../helpers/securePassword'
 import User from '../models/User'
 
 async function getUsers(req: Request, res: Response) {
@@ -28,7 +29,12 @@ async function getUserById(req: Request, res: Response) {
 async function storeUser(req: Request, res: Response) {
     const { name, email, password, role_id }: User = req.body
 
-    const user = new User({ name, email, password, role_id })
+    const user: User = {
+        name,
+        email,
+        password: await securePassword(password),
+        role_id,
+    }
 
     const result = await User.create(user)
 
@@ -43,7 +49,12 @@ async function updateUser(req: Request, res: Response) {
     const { id } = req.params
     const { name, email, password, role_id }: User = req.body
 
-    const user = new User({ name, email, password, role_id })
+    const user: User = {
+        name,
+        email,
+        password: await securePassword(password),
+        role_id,
+    }
 
     const result = await User.update(Number(id), user)
 

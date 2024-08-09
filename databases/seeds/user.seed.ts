@@ -15,7 +15,7 @@ async function seedUsers(users: User[]) {
 
 async function cleanUsers() {
     try {
-        await pool.query('DELETE FROM users')
+        await pool.query('TRUNCATE TABLE users RESTART IDENTITY')
         console.log('Users collection cleaned'.yellow)
     } catch (error) {
         console.log(`${error}`.red)
