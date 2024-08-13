@@ -77,7 +77,7 @@ class User implements IUser {
     }
 
     static async create(user: IUser) {
-        const { name, email, password, role_id } = user
+        const { name, email, password, role_id = 4 } = user
 
         try {
             await pool.query(
