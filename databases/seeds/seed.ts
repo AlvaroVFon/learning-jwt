@@ -6,9 +6,10 @@ import { roles } from '../factories/role.factories'
 import { users } from '../factories/user.factorie'
 
 async function seed() {
+    console.log(roles, users)
     await Promise.all([seedRoles(roles), seedUsers(users)])
-        .then(() => {
-            console.log('Seeds successfully executed'.green)
+        .then((res) => {
+            console.log(res)
         })
         .catch((error) => {
             console.log(`${error}`.red)

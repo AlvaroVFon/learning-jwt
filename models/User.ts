@@ -1,13 +1,12 @@
 import { IUser } from '../interfaces/IUser'
 import { pool } from '../databases/postgresDB'
-import { securePassword } from '../helpers/securePassword'
 
 class User implements IUser {
     id?: number
     name: string
     email: string
     password: string
-    role_id: number
+    role_id?: number
     created_at?: string
     updated_at?: string
     deleted_at?: string
@@ -51,7 +50,7 @@ class User implements IUser {
         try {
             const result = await pool
                 .query(
-                    'SELECT id, name, email, role_id, created_at FROM users WHERE id = $1',
+                    'SELECT id, name, email, role_id, created_at FROM users WHERE id = $1 AND deleted_at IS NULL',
                     [id]
                 )
                 .then((res) => res.rows)
@@ -62,13 +61,28 @@ class User implements IUser {
         }
     }
 
+    static async findByEmail(email: string) {
+        try {
+            const result = await pool
+                .query(
+                    'SELECT id, email, password, role_id, created_at, updated_at FROM users WHERE email = $1 and deleted_at IS NULL',
+                    [email]
+                )
+                .then((res) => res.rows[0])
+
+            return result
+        } catch (error) {
+            return error
+        }
+    }
+
     static async create(user: IUser) {
-        const { name, email, password, role_id } = user
+        const { name, email, password, role_id = 4 } = user
 
         try {
             await pool.query(
                 'INSERT INTO users (name, email, password, role_id) VALUES ($1, $2, $3, $4)',
-                [name, email, await securePassword(password), role_id]
+                [name, email, password, role_id]
             )
 
             return user
@@ -82,7 +96,7 @@ class User implements IUser {
 
         try {
             await pool.query(
-                'UPDATE users SET name = $1, email = $2, password = $3, role_id = $4 WHERE id = $5',
+                'UPDATE users SET name = $1, email = $2, password = $3, role_id = $4, updated_at = CURRENT_TIMESTAMP  WHERE id = $5',
                 [name, email, password, role_id, id]
             )
 

@@ -5,4 +5,9 @@ async function securePassword(password: string): Promise<string> {
     return await bcrypt.hash(password, salt)
 }
 
-export { securePassword }
+function securePasswordSync(password: string) {
+    const salt = bcrypt.genSaltSync(10)
+    return bcrypt.hashSync(password, salt)
+}
+
+export { securePassword, securePasswordSync }

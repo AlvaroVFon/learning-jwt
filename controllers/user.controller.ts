@@ -1,4 +1,5 @@
 import { Response, Request } from 'express'
+import { securePassword } from '../helpers/securePassword'
 import User from '../models/User'
 
 async function getUsers(req: Request, res: Response) {
@@ -16,7 +17,15 @@ async function getUsers(req: Request, res: Response) {
 async function getUserById(req: Request, res: Response) {
     const { id } = req.params
 
-    const user = await User.findOne(Number(id))
+    const user: User | any = await User.findOne(Number(id))
+
+    if (user.length === 0) {
+        res.status(404).json({
+            statusMessage: 'Not Found',
+            msg: 'User not found',
+        })
+        return
+    }
 
     res.json({
         statusMessage: 'success',
@@ -28,22 +37,47 @@ async function getUserById(req: Request, res: Response) {
 async function storeUser(req: Request, res: Response) {
     const { name, email, password, role_id }: User = req.body
 
-    const user = new User({ name, email, password, role_id })
+    const user: User = {
+        name,
+        email,
+        password: await securePassword(password),
+        role_id,
+    }
 
-    const result = await User.create(user)
+    const response = await User.create(user)
+        .then((res: any) => {
+            if (res.name === 'error') {
+                return {
+                    statusMessage: 'error',
+                    msg: res.detail,
+                }
+            }
+            return {
+                statusMessage: 'success',
+                msg: 'Create user successful',
+                data: res,
+            }
+        })
+        .catch((err: any) => err)
 
-    res.json({
-        statusMessage: 'success',
-        msg: 'Create user successful',
-        data: result,
-    })
+    if (response.statusMessage === 'error') {
+        res.status(400).json(response)
+        return
+    }
+
+    res.json(response)
 }
 
 async function updateUser(req: Request, res: Response) {
     const { id } = req.params
     const { name, email, password, role_id }: User = req.body
 
-    const user = new User({ name, email, password, role_id })
+    const user: User = {
+        name,
+        email,
+        password: await securePassword(password),
+        role_id,
+    }
 
     const result = await User.update(Number(id), user)
 
