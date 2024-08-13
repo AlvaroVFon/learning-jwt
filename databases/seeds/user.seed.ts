@@ -2,13 +2,15 @@ import User from '../../models/User'
 import { pool } from '../postgresDB'
 
 async function seedUsers(users: User[]) {
-    await cleanUsers()
-
-    console.log('Seeding users...'.yellow)
-
-    users.forEach(async (user) => {
-        await User.create(user).catch((error) => {
-            console.log(`${error}`.red)
+    await cleanUsers().then(() => {
+        users.forEach((user) => {
+            User.create(user)
+                .then(() => {
+                    console.log(`User ${user.name} seeded`.green)
+                })
+                .catch((error) => {
+                    console.log(`${error}`.red)
+                })
         })
     })
 }
